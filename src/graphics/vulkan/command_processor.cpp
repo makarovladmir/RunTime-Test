@@ -3020,15 +3020,15 @@ void VulkanCommandProcessor::IssueSwap(uint32_t frontbuffer_ptr, uint32_t frontb
       double avg_bar_img = (double)telemetry_window_.barrier_img / n_frames;
 
 #if defined(__ANDROID__)
-      __android_log_print(ANDROID_LOG_INFO, "REX_GPU_PROF",
+      if (false) __android_log_print(ANDROID_LOG_INFO, "REX_GPU_PROF",
           "[GPU_TELEMETRY] FPS: %.1f | FenceWait: %.2fms | CPU(Draw: %.2fms, Copy: %.2fms, Sub: %.2fms, Swap: %.2fms) | Draws/f: %.0f (Vtx: %.1fk) | Resolves/f: %.0f | Passes/f: %.0f | PipeBinds/f: %.0f",
           fps, avg_fence_wait_ms, avg_draw_ms, avg_resolve_ms, avg_submit_ms, avg_swap_ms,
           avg_draws, avg_vtx, avg_resolves, avg_passes, avg_binds);
-      __android_log_print(ANDROID_LOG_INFO, "REX_GPU_PROF",
+      if (false) __android_log_print(ANDROID_LOG_INFO, "REX_GPU_PROF",
           "[GPU_TELEMETRY] Sub-Draw: Prim: %.2fms | RT: %.2fms | Pipe: %.2fms | Bind: %.2fms | RP(Bar: %.0f, FB: %.0f, Pass: %.0f, Xfer: %.0f)",
           avg_prim_ms, avg_rt_ms, avg_pipe_ms, avg_bind_ms,
           avg_rp_bar, avg_rp_fb, avg_rp_pass, avg_rp_xfer);
-      __android_log_print(ANDROID_LOG_INFO, "REX_GPU_PROF",
+      if (false) __android_log_print(ANDROID_LOG_INFO, "REX_GPU_PROF",
           "[GPU_TELEMETRY] Barriers: ShmemBuf: %.0f | OtherBuf: %.0f | Img: %.0f",
           avg_bar_shmem, avg_bar_other_buf, avg_bar_img);
 #endif

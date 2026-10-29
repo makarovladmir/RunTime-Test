@@ -34,6 +34,19 @@
 #include <rex/system/xevent.h>
 #include <rex/system/xmutant.h>
 #include <rex/system/xthread.h>
+#if defined(__ANDROID__)
+#include <sched.h>
+#include <unistd.h>
+static void PinGuestThreadToBigCores() {
+  cpu_set_t mask;
+  CPU_ZERO(&mask);
+  for (int cpu = 3; cpu <= 7; ++cpu) {
+    CPU_SET(cpu, &mask);
+  }
+  sched_setaffinity(0, sizeof(mask), &mask);
+}
+#endif
+
 #include <rex/thread.h>
 #include <rex/vec128.h>
 
@@ -569,6 +582,9 @@ X_STATUS XThread::Terminate(int exit_code) {
 }
 
 void XThread::Execute() {
+#if defined(__ANDROID__)
+  PinGuestThreadToBigCores();
+#endif
   REXSYS_NOISY_DEBUG("Execute thid {} (handle={:08X}, '{}', native={:08X})", thread_id_, handle(),
                      thread_name_, thread_->system_id());
 
