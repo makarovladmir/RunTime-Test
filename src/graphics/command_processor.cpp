@@ -46,7 +46,7 @@ REXCVAR_DEFINE_BOOL(clear_memory_page_state, false, "GPU",
                     "Disable for minor CPU overhead reduction, but may break memory coherency.")
     .lifecycle(rex::cvar::Lifecycle::kHotReload);
 #else
-REXCVAR_DEFINE_BOOL(clear_memory_page_state, true, "GPU",
+REXCVAR_DEFINE_BOOL(clear_memory_page_state, false, "GPU",
                     "Refresh page-valid state from GPU-written memory at frame end. "
                     "Disable for minor CPU overhead reduction, but may break memory coherency.")
     .lifecycle(rex::cvar::Lifecycle::kHotReload);

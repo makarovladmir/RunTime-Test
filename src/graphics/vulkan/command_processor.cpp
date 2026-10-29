@@ -71,7 +71,7 @@ REXCVAR_DEFINE_BOOL(vulkan_submit_on_primary_buffer_end, false, "GPU/Vulkan",
                     "Submit command buffer when PM4 primary buffer ends")
     .lifecycle(rex::cvar::Lifecycle::kHotReload);
 #else
-REXCVAR_DEFINE_BOOL(vulkan_submit_on_primary_buffer_end, true, "GPU/Vulkan",
+REXCVAR_DEFINE_BOOL(vulkan_submit_on_primary_buffer_end, false, "GPU/Vulkan",
                     "Submit command buffer when PM4 primary buffer ends")
     .lifecycle(rex::cvar::Lifecycle::kHotReload);
 #endif
