@@ -775,7 +775,14 @@ class PosixCondition<Thread> : public PosixConditionBase {
     CPU_ZERO(&cpu_set);
     for (auto i = 0u; i < 64; i++) {
       if (mask & (1ULL << i)) {
-        CPU_SET(i, &cpu_set);
+        #if defined(__ANDROID__) && defined(__aarch64__)
+      {
+        static const int kBigCores[5] = {3, 4, 5, 6, 7};
+        CPU_SET(kBigCores[i % 5], &cpu_set);
+      }
+#else
+      CPU_SET(i, &cpu_set);
+#endif
       }
     }
     pid_t tid = pthread_gettid_np(thread_);

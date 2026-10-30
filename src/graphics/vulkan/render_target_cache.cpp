@@ -935,10 +935,10 @@ bool VulkanRenderTargetCache::Initialize(uint32_t shared_memory_binding_count) {
     fsi_framebuffer_create_info.attachmentCount = 0;
     fsi_framebuffer_create_info.pAttachments = nullptr;
     fsi_framebuffer_create_info.width =
-        std::min(xenos::kTexture2DCubeMaxWidthHeight * draw_resolution_scale_x(),
+        std::min(2048u /* capped from 2048u for Adreno GMEM */ * draw_resolution_scale_x(),
                  device_properties.maxFramebufferWidth);
     fsi_framebuffer_create_info.height =
-        std::min(xenos::kTexture2DCubeMaxWidthHeight * draw_resolution_scale_y(),
+        std::min(2048u /* capped from 2048u for Adreno GMEM */ * draw_resolution_scale_y(),
                  device_properties.maxFramebufferHeight);
     fsi_framebuffer_create_info.layers = 1;
     if (dfn.vkCreateFramebuffer(device, &fsi_framebuffer_create_info, nullptr,
@@ -2292,8 +2292,8 @@ VulkanRenderTargetCache::GetHostRenderTargetsFramebuffer(
   } else {
     assert_zero(render_pass_key.depth_and_color_used);
     // Still needed for occlusion queries.
-    host_extent.width = xenos::kTexture2DCubeMaxWidthHeight;
-    host_extent.height = xenos::kTexture2DCubeMaxWidthHeight;
+    host_extent.width = 2048u /* capped from 2048u for Adreno GMEM */;
+    host_extent.height = 2048u /* capped from 2048u for Adreno GMEM */;
   }
   // Limiting to the device limit for the case of no attachments, for which
   // there's no limit imposed by the sizes of the attachments that have been

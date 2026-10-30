@@ -420,11 +420,11 @@ bool RenderTargetCache::Update(bool is_rasterization_done,
   assert_true(pitch_pixels || !is_rasterization_done);
   if (!pitch_pixels) {
     is_rasterization_done = false;
-  } else if (pitch_pixels > xenos::kTexture2DCubeMaxWidthHeight) {
+  } else if (pitch_pixels > 2048u /* capped from 2048u for Adreno GMEM */) {
     REXGPU_ERROR(
         "Surface pitch {} larger than the maximum texture width {} specified "
         "by the guest",
-        pitch_pixels, xenos::kTexture2DCubeMaxWidthHeight);
+        pitch_pixels, 2048u /* capped from 2048u for Adreno GMEM */);
     return false;
   }
   uint32_t pitch_tiles_at_32bpp =
@@ -438,9 +438,9 @@ bool RenderTargetCache::Update(bool is_rasterization_done,
     if (pitch_pixels_tile_aligned_scaled > max_render_target_width) {
       // TODO(Triang3l): If really needed for some game on some device, clamp
       // the pitch and generate multiple ranges (each for every row of tiles)
-      // with gaps for padding. Very few PowerVR GPUs have 4096, not 8192, as
-      // the limit, though with 8192 (on Mali) the actual limit for Xenia is
-      // 8160 because tile padding is stored - but 8192 should be extremely rare
+      // with gaps for padding. Very few PowerVR GPUs have 4096, not 2048u, as
+      // the limit, though with 2048u (on Mali) the actual limit for Xenia is
+      // 8160 because tile padding is stored - but 2048u should be extremely rare
       // anyway.
       REXGPU_ERROR(
           "Surface pitch aligned to EDRAM tiles and resolution-scaled {} "
@@ -797,11 +797,11 @@ uint32_t RenderTargetCache::GetRenderTargetHeight(uint32_t pitch_tiles_at_32bpp,
   uint32_t tile_rows = (xenos::kEdramTileCount + (pitch_tiles_at_32bpp - 1)) / pitch_tiles_at_32bpp;
   // Clamp to the guest limit (tile padding should exceed it) and to the host
   // limit (tile padding mustn't exceed it).
-  static_assert(!(xenos::kTexture2DCubeMaxWidthHeight % xenos::kEdramTileHeightSamples),
+  static_assert(!(2048u /* capped from 2048u for Adreno GMEM */ % xenos::kEdramTileHeightSamples),
                 "Maximum guest render target height is assumed to always be a multiple "
                 "of an EDRAM tile height");
   uint32_t max_height_scaled = std::min(
-      xenos::kTexture2DCubeMaxWidthHeight * draw_resolution_scale_y(), GetMaxRenderTargetHeight());
+      2048u /* capped from 2048u for Adreno GMEM */ * draw_resolution_scale_y(), GetMaxRenderTargetHeight());
   uint32_t msaa_samples_y_log2 = uint32_t(msaa_samples >= xenos::MsaaSamples::k2X);
   uint32_t tile_height_samples_scaled = xenos::kEdramTileHeightSamples * draw_resolution_scale_y();
   tile_rows =
@@ -968,14 +968,14 @@ bool RenderTargetCache::PrepareHostRenderTargetsResolveClear(
   }
   uint32_t msaa_samples_x_log2 = uint32_t(msaa_samples >= xenos::MsaaSamples::k4X);
   uint32_t msaa_samples_y_log2 = uint32_t(msaa_samples >= xenos::MsaaSamples::k2X);
-  if (pitch_tiles_at_32bpp > ((xenos::kTexture2DCubeMaxWidthHeight << msaa_samples_x_log2) +
+  if (pitch_tiles_at_32bpp > ((2048u /* capped from 2048u for Adreno GMEM */ << msaa_samples_x_log2) +
                               (xenos::kEdramTileWidthSamples - 1)) /
                                  xenos::kEdramTileWidthSamples) {
     REXGPU_ERROR(
         "Surface pitch in 80-sample groups {} at {}x MSAA larger than the "
         "maximum texture width {} specified by the guest in a resolve",
         pitch_tiles_at_32bpp, uint32_t(1) << uint32_t(msaa_samples),
-        xenos::kTexture2DCubeMaxWidthHeight);
+        2048u /* capped from 2048u for Adreno GMEM */);
     return false;
   }
   uint32_t pitch_pixels =

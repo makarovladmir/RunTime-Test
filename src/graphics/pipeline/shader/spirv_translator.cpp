@@ -2445,6 +2445,24 @@ void SpirvShaderTranslator::CompleteVertexOrTessEvalShaderInMain() {
   spv::Id position_ptr =
       builder_->createAccessChain(spv::StorageClassOutput, output_per_vertex_, id_vector_temp_);
   spv::Id guest_position = builder_->createLoad(position_ptr, spv::NoPrecision);
+  // Sanitize guest_position against NaN/Inf on Adreno 7xx before 1/W inversion & clipping
+  {
+    spv::Id lim_hi = builder_->makeFloatConstant(1.0e10f);
+    spv::Id lim_lo = builder_->makeFloatConstant(-1.0e10f);
+    id_vector_temp_.clear();
+    for (int c = 0; c < 4; ++c) id_vector_temp_.push_back(lim_lo);
+    spv::Id min_v4 = builder_->makeCompositeConstant(type_float4_, id_vector_temp_);
+    id_vector_temp_.clear();
+    for (int c = 0; c < 4; ++c) id_vector_temp_.push_back(lim_hi);
+    spv::Id max_v4 = builder_->makeCompositeConstant(type_float4_, id_vector_temp_);
+    id_vector_temp_.clear();
+    id_vector_temp_.push_back(guest_position);
+    id_vector_temp_.push_back(min_v4);
+    id_vector_temp_.push_back(max_v4);
+    guest_position = builder_->createBuiltinCall(
+        type_float4_, ext_inst_glsl_std_450_, GLSLstd450NClamp, id_vector_temp_);
+    builder_->createStore(guest_position, position_ptr);
+  }
 
   // Check if the shader already returns W, not 1/W, and if it doesn't, turn 1/W
   // into W.

@@ -1017,7 +1017,6 @@ spv::Id SpirvShaderTranslator::ProcessScalarAluOperation(
     case ucode::AluScalarOpcode::kFloors:
     case ucode::AluScalarOpcode::kExp:
     case ucode::AluScalarOpcode::kLog:
-    case ucode::AluScalarOpcode::kRsq:
     case ucode::AluScalarOpcode::kSqrt:
     case ucode::AluScalarOpcode::kSin:
     case ucode::AluScalarOpcode::kCos:
@@ -1063,15 +1062,37 @@ spv::Id SpirvShaderTranslator::ProcessScalarAluOperation(
                                      builder_->createUnaryOp(spv::OpBitcast, type_uint_, result));
       return builder_->createUnaryOp(spv::OpBitcast, type_float_, result);
     }
+    case ucode::AluScalarOpcode::kRsq: {
+      spv::Id src = GetOperandComponents(operand_storage[0], instr.scalar_operands[0], 0b0001);
+      spv::Id abs_src = builder_->createUnaryBuiltinCall(
+          type_float_, ext_inst_glsl_std_450_, GLSLstd450FAbs, src);
+      id_vector_temp_.clear();
+      id_vector_temp_.push_back(abs_src);
+      id_vector_temp_.push_back(builder_->makeFloatConstant(1.0e-20f));
+      spv::Id safe_src = builder_->createBuiltinCall(
+          type_float_, ext_inst_glsl_std_450_, GLSLstd450FMax, id_vector_temp_);
+      return builder_->createUnaryBuiltinCall(
+          type_float_, ext_inst_glsl_std_450_, GLSLstd450InverseSqrt, safe_src);
+    }
     case ucode::AluScalarOpcode::kRcp: {
-      return builder_->createNoContractionBinOp(
+      spv::Id result = builder_->createNoContractionBinOp(
           spv::OpFDiv, type_float_, const_float_1_,
           GetOperandComponents(operand_storage[0], instr.scalar_operands[0], 0b0001));
+      result = builder_->createTriOp(spv::OpSelect, type_float_,
+                                     builder_->createBinOp(spv::OpFOrdEqual, type_bool_, result,
+                                                           builder_->makeFloatConstant(-INFINITY)),
+                                     builder_->makeFloatConstant(-FLT_MAX), result);
+      return builder_->createTriOp(spv::OpSelect, type_float_,
+                                   builder_->createBinOp(spv::OpFOrdEqual, type_bool_, result,
+                                                         builder_->makeFloatConstant(INFINITY)),
+                                   builder_->makeFloatConstant(FLT_MAX), result);
     }
     case ucode::AluScalarOpcode::kRsqc: {
+      spv::Id src = GetOperandComponents(operand_storage[0], instr.scalar_operands[0], 0b0001);
+      spv::Id abs_src = builder_->createUnaryBuiltinCall(
+          type_float_, ext_inst_glsl_std_450_, GLSLstd450FAbs, src);
       spv::Id result = builder_->createUnaryBuiltinCall(
-          type_float_, ext_inst_glsl_std_450_, GLSLstd450InverseSqrt,
-          GetOperandComponents(operand_storage[0], instr.scalar_operands[0], 0b0001));
+          type_float_, ext_inst_glsl_std_450_, GLSLstd450InverseSqrt, abs_src);
       result = builder_->createTriOp(spv::OpSelect, type_float_,
                                      builder_->createBinOp(spv::OpFOrdEqual, type_bool_, result,
                                                            builder_->makeFloatConstant(-INFINITY)),
