@@ -1,3 +1,22 @@
+
+#include <time.h>
+// Swappy-style VSync frame-pacing limiter (33.33ms / 16.66ms lock)
+static inline void ac2_swappy_frame_pace(uint64_t targetFrameNs) {
+    static uint64_t s_lastPresentNs = 0;
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    uint64_t nowNs = static_cast<uint64_t>(ts.tv_sec) * 1000000000ULL + ts.tv_nsec;
+    if (s_lastPresentNs != 0 && nowNs - s_lastPresentNs < targetFrameNs) {
+        uint64_t sleepNs = targetFrameNs - (nowNs - s_lastPresentNs);
+        if (sleepNs > 200000ULL && sleepNs < 50000000ULL) {
+            struct timespec req = {0, static_cast<long>(sleepNs - 150000ULL)};
+            nanosleep(&req, nullptr);
+        }
+    }
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    s_lastPresentNs = static_cast<uint64_t>(ts.tv_sec) * 1000000000ULL + ts.tv_nsec;
+}
+
 /**
  ******************************************************************************
  * Xenia : Xbox 360 Emulator Research Project                                 *

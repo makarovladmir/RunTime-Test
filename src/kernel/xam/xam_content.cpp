@@ -1,3 +1,15 @@
+
+#include <sys/stat.h>
+// Auto-provisions Title ID 5553083B (Assassin's Creed II) content save directory for mid-game Florence saves
+extern "C" void ac2_ensure_openworld_save_slot(const char* rootContentDir) {
+    if (!rootContentDir) return;
+    char path[512];
+    snprintf(path, sizeof(path), "%s/5553083B", rootContentDir);
+    mkdir(path, 0777);
+    snprintf(path, sizeof(path), "%s/5553083B/00000001", rootContentDir);
+    mkdir(path, 0777);
+}
+
 /**
  ******************************************************************************
  * Xenia : Xbox 360 Emulator Research Project                                 *

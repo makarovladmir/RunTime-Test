@@ -1,3 +1,23 @@
+
+// REX_SIMDE_NEON_VMX128_OPT: Fast ARM64 NEON VMX128 Dot-Product, Permute & PIC VTable Cache
+#if defined(__aarch64__)
+#include <arm_neon.h>
+static inline float32x4_t rex_vmx128_vmsum4fp_neon(float32x4_t a, float32x4_t b) {
+    float32x4_t prod = vmulq_f32(a, b);
+    float sum = vaddvq_f32(prod);
+    return vdupq_n_f32(sum);
+}
+static inline uint8x16_t rex_vmx128_vperm_neon(uint8x16_t a, uint8x16_t b, uint8x16_t mask) {
+    uint8x16x2_t table = {{a, b}};
+    return vqtbl2q_u8(table, vandq_u8(mask, vdupq_n_u8(0x1F)));
+}
+#endif
+
+struct RexIndirectCallPIC {
+    uint32_t guest_target;
+    void* host_fn;
+};
+
 /**
  * @file        ppc/intrinsics.h
  * @brief       SIMD intrinsic helpers and vector lookup tables for PPC AltiVec emulation

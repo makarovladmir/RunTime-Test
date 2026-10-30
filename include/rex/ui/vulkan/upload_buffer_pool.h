@@ -1,3 +1,5 @@
+// REX_VMA_SEQUENTIAL_WRITE_OPT: Host-visible sequential write ring-buffer pooling
+static constexpr uint32_t kVmaSequentialStagingAlignment = 65536;
 #pragma once
 /**
  ******************************************************************************
