@@ -193,3 +193,17 @@ else()
     set(REXGLUE_SHARE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/ui")
     include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/rexglue_helpers.cmake)
 endif()
+
+
+# Phase 3: Snapdragon 8s Gen 3 (Cortex-X4 / Cortex-A720) Safe Optimization Flags
+if(ANDROID)
+    add_compile_options(
+        -O3
+        -march=armv8.2-a+fp16+dotprod+i8mm
+        -fno-fast-math
+        -fno-finite-math-only
+        -funroll-loops
+        -fomit-frame-pointer
+    )
+    add_link_options(-flto=thin -Wl,-O3 -Wl,--gc-sections)
+endif()

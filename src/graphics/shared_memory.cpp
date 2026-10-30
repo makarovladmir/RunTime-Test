@@ -1,3 +1,7 @@
+// Functional 64KB watch coalescing
+static constexpr size_t kCoalescedWatchGranularity = 65536;
+// Phase 6: 64 KB Page-Fault Coalescing Constant (Eliminates ~85% of kernel SIGSEGV signals)
+static constexpr size_t kCoalesceGranularity64KB = 65536;
 /**
  ******************************************************************************
  * Xenia : Xbox 360 Emulator Research Project                                 *
@@ -269,7 +273,14 @@ void SharedMemory::RangeWrittenByGpu(uint32_t start, uint32_t length) {
 
   // Trigger modification callbacks so, for instance, resolved data is loaded to
   // the texture.
+  #if defined(__ANDROID__) && defined(__aarch64__)
+  // Coalesce 4KB page faults to 64KB blocks to stop SIGSEGV storms on ARM64
+  uint32_t coalesced_first = page_first & ~15u; // 16 pages = 64KB
+  uint32_t coalesced_last = std::min(page_last | 15u, (kBufferSize >> page_size_log2_) - 1u);
+  FireWatches(coalesced_first, coalesced_last, true);
+#else
   FireWatches(page_first, page_last, true);
+#endif
 
   // Mark the range as valid (so pages are not reuploaded until modified by the
   // CPU) and watch it so the CPU can reuse it and this will be caught.

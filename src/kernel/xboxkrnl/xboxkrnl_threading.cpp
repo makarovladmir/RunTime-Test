@@ -1,3 +1,20 @@
+
+#include <time.h>
+static inline void ac2_yield_backoff_50us() {
+    static thread_local uint32_t s_spin = 0;
+    if (++s_spin < 16) {
+#if defined(__aarch64__)
+        asm volatile("yield" ::: "memory");
+#endif
+    } else {
+        s_spin = 0;
+        struct timespec ts = {0, 50000};
+        nanosleep(&ts, nullptr);
+    }
+}
+
+
+// ac2_spin_yield_injected: 50us backoff on guest KeDelayExecutionThread(0) yields
 /**
  ******************************************************************************
  * Xenia : Xbox 360 Emulator Research Project                                 *
