@@ -1,3 +1,5 @@
+#include <cstddef>
+#include <cstdint>
 // Functional 64KB watch coalescing
 static constexpr size_t kCoalescedWatchGranularity = 65536;
 // Phase 6: 64 KB Page-Fault Coalescing Constant (Eliminates ~85% of kernel SIGSEGV signals)
